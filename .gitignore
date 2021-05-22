@@ -1,3 +1,4 @@
+.history
 /config/app.php
 /config/app_local.php
 /webroot/node_modules/*
