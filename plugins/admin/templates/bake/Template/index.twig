@@ -1,0 +1,107 @@
+<?php
+/**
+ * @var \{{ namespace }}\View\AppView $this
+ * @var \{{ entityClass }}[]|\Cake\Collection\CollectionInterface ${{ pluralVar }}
+ */
+?>
+
+<div class="col-lg-12">
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions pull-right">
+                <?php
+                if ($canCreate) {
+                    echo $this->Html->link(
+                        '<button type="button" class="btn btn-default mr-sm"><i class="fa fa-plus mr-xs"></i>Incluir</button>',
+                        ['action' => 'add'],
+                        ['escape' => false, 'title' => 'Incluir']
+                    );
+                }
+                ?>
+
+                <a href="#" class="panel-action panel-action-toggle" data-panel-toggle=""></a>
+            </div>
+
+            <h2 class="panel-title">Listagem</h2>
+        </header>
+
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table mb-none">
+                    <thead>
+                        <tr>
+    {% for field in fields %}
+                        <th><?= $this->Paginator->sort('{{ field }}', __('{{ field|capitalize }}')) ?></th>
+    {% endfor %}
+                        <th class="actions">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach (${{ pluralVar }} as ${{ singularVar }}): ?>
+                            <tr>
+{% for field in fields %}
+{% set isKey = false %}
+{% if associations.BelongsTo is defined %}
+{% for alias, details in associations.BelongsTo %}
+{% if field == details.foreignKey %}
+{% set isKey = true %}
+                                <td><?= ${{ singularVar }}->has('{{ details.property }}') ? ($userAuthenticated->can('view', ${{ singularVar }}->{{ details.property }}) ? $this->Html->link(${{ singularVar }}->{{ details.property }}->{{ details.displayField }}, ['controller' => '{{ details.controller }}', 'action' => 'view', ${{ singularVar }}->{{ details.property }}->{{ details.primaryKey[0] }}]) : ${{ singularVar }}->{{ details.property }}->{{ details.displayField }}) : '' ?></td>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if isKey is not same as(true) %}
+{% set columnData = Bake.columnData(field, schema) %}
+{% if columnData.type not in ['integer', 'float', 'decimal', 'biginteger', 'smallinteger', 'tinyinteger'] %}
+                                <td><?= h(${{ singularVar }}->{{ field }}) ?></td>
+{% else %}
+                                <td><?= $this->Number->format(${{ singularVar }}->{{ field }}) ?></td>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% set pk = '$' ~ singularVar ~ '->' ~ primaryKey[0] %}
+                                <td class="actions">
+                                    <?php
+                                    if ($userAuthenticated && $userAuthenticated->can('view', ${{ singularVar }})) {
+                                        echo $this->Html->link(
+                                            '<button type="button" class="mr-xs mb-xs btn btn-xs btn-info"><i class="fa fa-search"></i></button>',
+                                            ['action' => 'view', {{ pk|raw }}],
+                                            ['escape' => false, 'title' => 'Visualizar']
+                                        );
+                                    }
+
+                                    if ($userAuthenticated && $userAuthenticated->can('update', ${{ singularVar }})) {
+                                        echo $this->Html->link(
+                                            '<button type="button" class="mr-xs mb-xs btn btn-xs btn-warning"><i class="fa fa-pencil"></i></button>',
+                                            ['action' => 'edit', {{ pk|raw }}],
+                                            ['escape' => false, 'title' => 'Editar']
+                                        );
+                                    }
+                                        
+                                    if ($userAuthenticated && $userAuthenticated->can('delete', ${{ singularVar }})) {
+                                        echo $this->Form->postLink(
+                                            '<button type="button" class="mr-xs mb-xs btn btn-xs btn-danger"><i class="fa fa-trash-o"></i></button>',
+                                            ['action' => 'delete', {{ pk|raw }}],
+                                            ['escape' => false, 'title' => 'Excluir', 'confirm' => 'Confirma a exclusão deste registro?']
+                                        );
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="paginator">
+                <ul class="pagination">
+                    <?= $this->Paginator->first('<< Primeira') ?>
+                    <?= $this->Paginator->prev('< Anterior') ?>
+                    <?= $this->Paginator->numbers() ?>
+                    <?= $this->Paginator->next('Próxima >') ?>
+                    <?= $this->Paginator->last('Última >>') ?>
+                </ul>
+                <p><?= $this->Paginator->counter('Página {{ '{{' }}page{{ '}}' }} de {{ '{{' }}pages{{ '}}' }}, exibindo {{ '{{' }}current{{ '}}' }} registro(s) de {{ '{{' }}count{{ '}}' }}') ?></p>
+            </div>
+        </div>
+    </section>
+</div>

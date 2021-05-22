@@ -1,0 +1,22 @@
+{% set allAssociations = Bake.aliasExtractor(modelObj, 'BelongsTo') %}
+{% set allAssociations = allAssociations|merge(Bake.aliasExtractor(modelObj, 'BelongsToMany')) %}
+{% set allAssociations = allAssociations|merge(Bake.aliasExtractor(modelObj, 'HasOne')) %}
+{% set allAssociations = allAssociations|merge(Bake.aliasExtractor(modelObj, 'HasMany')) %}
+    /**
+     * @param string|null $id {{ singularHumanName }} id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null)
+    {
+        ${{ singularName }} = $this->{{ currentModelName }}->get($id, [
+            'contain' => [{{ Bake.stringifyList(allAssociations, {'indent': false})|raw }}],
+        ]);
+
+        if (!$this->userAuthenticated->can('view', ${{ singularName }})) {
+            $this->Flash->error('Permissão negada!');
+            return $this->redirect($this->referer());
+        }
+
+        $this->set('{{ singularName }}', ${{ singularName }});
+    }

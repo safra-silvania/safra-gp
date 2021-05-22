@@ -1,0 +1,180 @@
+{% set isController = type|lower == 'controller' %}
+{% set name = className|replace({'Controller': ''})|lower %}
+{% set isShell = type|lower == 'shell' %}
+{% set isCommand = type|lower == 'command' %}
+{% if isController %}
+    {%- set traitName = 'IntegrationTestTrait' %}
+{% elseif isShell or isCommand %}
+    {%- set traitName = 'ConsoleIntegrationTestTrait' %}
+{% endif %}
+{%- set uses = uses|merge(["Cake\\TestSuite\\TestCase"]) %}
+{% if traitName is defined %}
+    {%- set uses = uses|merge(["Cake\\TestSuite\\#{traitName}"]) %}
+{% endif %}
+
+{%- set uses = uses|sort %}
+<?php
+declare(strict_types=1);
+
+namespace {{ baseNamespace }}\Test\TestCase\{{ subNamespace }};
+
+{% for dependency in uses %}
+use {{ dependency }};
+{% endfor %}
+{% if isController %}
+use Cake\ORM\TableRegistry;
+{% endif %}
+
+/**
+ * {{ fullClassName }} Test Case
+{% if isController or isCommand %}
+ *
+ * @uses \{{ fullClassName }}
+{% endif %}
+ */
+class {{ className }}Test extends TestCase
+{
+{% if traitName is defined %}
+    use {{ traitName }};
+{% if properties or fixtures or construction or methods %}
+
+{% endif %}
+{% endif %}
+{% if properties %}
+{% for propertyInfo in properties %}
+{% if loop.index > 1 %}
+
+{% endif %}
+    /**
+     * @var {{ propertyInfo.type }}
+     */
+    protected ${{ propertyInfo.name }}{% if propertyInfo.value is defined and propertyInfo.value %} = {{ propertyInfo.value }}{% endif %};
+{% if loop.last and (fixtures or construction or methods) %}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{%- if fixtures %}
+    /**
+     * @var array
+     */
+    protected $fixtures = [{{ Bake.stringifyList(fixtures|values)|raw }}];
+{% if isController %}
+    
+    /**
+     * @var \App\Model\Table\{{ name|camelize }}Table
+     */
+    protected ${{ name|camelize }};
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->session([
+            'Auth' => [
+                'User' => [
+                    'id' => 1,
+                    'role_id' => 1,
+                    'username' => 'testing',
+                    'email' => 'testing@test.com',
+                ]
+            ]
+        ]);
+
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+
+        $this->{{ name|camelize }} = TableRegistry::getTableLocator()->get('{{ name|camelize }}');
+    }
+{% endif %}
+{% if construction or methods %}
+
+{% endif %}
+{% endif %}
+
+{%- if construction %}
+    public function setUp(): void
+    {
+        parent::setUp();
+{% if preConstruct %}
+        {{ preConstruct|raw }}
+{% endif %}
+{% if isCommand %}
+        {{ construction|raw }}
+{% else %}
+        $this->{{ (subject ~ ' = ' ~ construction)|raw }}
+{% endif %}
+{% if postConstruct %}
+        {{ postConstruct|raw }}
+{% endif %}
+    }
+{% if not isCommand %}
+
+    public function tearDown(): void
+    {
+        unset($this->{{ subject }});
+
+        parent::tearDown();
+    }
+{% if methods %}
+
+{% endif %}
+{% endif %}
+{% endif %}
+
+{%- for method in methods %}
+{% if loop.index > 1 %}
+
+{% endif %}
+    public function test{{ method|camelize }}(): void
+    {
+{% if isController %}
+{% if method == 'view' or method == 'edit' %}
+        $this->get('/{{ name }}/{{ method }}/1');
+        $this->assertResponseOk();
+{% elseif method == 'delete' %}
+        $this->delete('/{{ name }}/{{ method }}/1');
+        $this->assertRedirect(['controller' => '{{ name|camelize }}', 'action' => 'index']);
+{% else %}
+        $this->get('/{{ name }}');
+        $this->assertResponseOk();
+{% endif %}
+{% else %}
+        $this->markTestIncomplete('Not implemented yet.');
+{% endif %}
+    }
+{% endfor %}
+{% if isController %}
+
+    public function testAddPostData()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+
+        /*
+        $data = [];
+        $this->post('/{{ name }}/add', $data);
+
+        $this->assertResponseSuccess();
+        ${{ name }} = TableRegistry::getTableLocator()->get('{{ name|camelize }}');
+        $query = ${{ name }}->find()->where(['' => $data['']]);
+        $this->assertEquals(1, $query->count());
+        */
+    }
+
+    public function testEditPostData()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+
+        /*
+        $data = [];
+        $this->post('/{{ name }}/edit/1', $data);
+
+        $this->assertResponseSuccess();
+        ${{ name }} = TableRegistry::getTableLocator()->get('{{ name|camelize }}');
+        $query = ${{ name }}->find()->where(['' => $data['']]);
+        $this->assertEquals(1, $query->count());
+        */
+    }
+{% endif %}
+}

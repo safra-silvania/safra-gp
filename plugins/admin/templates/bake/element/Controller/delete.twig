@@ -1,0 +1,31 @@
+    /**
+     * @param string|null $id {{ singularHumanName }} id.
+     * @return \Cake\Http\Response|null|void Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        ${{ singularName }} = $this->{{ currentModelName }}->get($id);
+
+        if (!$this->userAuthenticated->can('delete', ${{ singularName }})) {
+            $this->Flash->error('Permissão negada!');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->{{ currentModelName }}->delete(${{ singularName }}))
+            $this->Flash->success('Exclusão realizada com sucesso');
+        else {
+            if (count(${{ singularName }}->getErrors()) > 0) {
+                foreach (${{ singularName }}->getErrors() as $error) {
+                    foreach ($error as $message) {
+                        $this->Flash->error($message);
+                    }
+                }
+            } else {
+                $this->Flash->error('Erro na exclusão de ' . __('{{ singularHumanName }}') . '. Por favor, tente novamente');
+            }
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }

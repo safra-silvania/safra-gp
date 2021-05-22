@@ -1,0 +1,110 @@
+<?php
+/**
+ * @var \{{ namespace }}\View\AppView $this
+ * @var \{{ entityClass }} ${{ singularVar }}
+ */
+?>
+{% set associations = {'BelongsTo': [], 'HasOne': [], 'HasMany': [], 'BelongsToMany': []}|merge(associations) %}
+{% set fieldsData = Bake.getViewFieldsData(fields, schema, associations) %}
+{% set associationFields = fieldsData.associationFields %}
+{% set groupedFields = fieldsData.groupedFields %}
+{% set pK = '$' ~ singularVar ~ '->' ~ primaryKey[0] %}
+
+<div class="col-lg-12">
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions pull-right">
+                <?php
+                echo $this->Html->link(
+                    '<button type="button" class="btn btn-default mr-sm"><i class="fa fa-arrow-left mr-xs"></i>Voltar</button>',
+                    ['action' => 'index'],
+                    ['escape' => false, 'title' => 'Voltar']
+                );
+                ?>
+
+                <a href="#" class="panel-action panel-action-toggle" data-panel-toggle=""></a>
+            </div>
+            <h2 class="panel-title">Visualizar</h2>
+        </header>
+
+        <div class="panel-body">
+            <table class="table table-hover">
+                <tbody>
+{% if groupedFields['string'] %}
+{% for field in groupedFields['string'] %}
+{% if associationFields[field] is defined %}
+{% set details = associationFields[field] %}
+                    <tr>
+                        <th class="col-lg-3"><?= __('{{ details.property|humanize }}') ?></th>
+                        <td class="col-lg-9"><?= ${{ singularVar }}->has('{{ details.property }}') ? ($userAuthenticated->can('view', ${{ singularVar }}->{{ details.property }}) ? $this->Html->link(${{ singularVar }}->{{ details.property }}->{{ details.displayField }}, ['controller' => '{{ details.controller }}', 'action' => 'view', ${{ singularVar }}->{{ details.property }}->{{ details.primaryKey[0] }}]) : ${{ singularVar }}->{{ details.property }}->{{ details.displayField }}) : '' ?></td>
+                    </tr>
+{% else %}
+                    <tr>
+                        <th class="col-lg-3"><?= __('{{ field|humanize }}') ?></th>
+                        <td class="col-lg-9"><?= h(${{ singularVar }}->{{ field }}) ?></td>
+                    </tr>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if associations.HasOne %}
+{% for alias, details in associations.HasOne %}
+                    <tr>
+                        <th class="col-lg-3"><?= __('{{ alias|underscore|singularize|humanize }}') ?></th>
+                        <td class="col-lg-9"><?= ${{ singularVar }}->has('{{ details.property }}') ? $this->Html->link(${{ singularVar }}->{{ details.property }}->{{ details.displayField }}, ['controller' => '{{ details.controller }}', 'action' => 'view', ${{ singularVar }}->{{ details.property }}->{{ details.primaryKey[0] }}]) : '' ?></td>
+                    </tr>
+{% endfor %}
+{% endif %}
+{% if groupedFields.number %}
+{% for field in groupedFields.number %}
+                    <tr>
+                        <th class="col-lg-3"><?= __('{{ field|humanize }}') ?></th>
+                        <td class="col-lg-9"><?= $this->Number->format(${{ singularVar }}->{{ field }}) ?></td>
+                    </tr>
+{% endfor %}
+{% endif %}
+{% if groupedFields.date %}
+{% for field in groupedFields.date %}
+                    <tr>
+                        <th class="col-lg-3"><?= __('{{ field|humanize }}') ?></th>
+                        <td class="col-lg-9"><?= h(${{ singularVar }}->{{ field }}) ?></td>
+                    </tr>
+{% endfor %}
+{% endif %}
+{% if groupedFields.boolean %}
+{% for field in groupedFields.boolean %}
+                    <tr>
+                        <th class="col-lg-3"><?= __('{{ field|humanize }}') ?></th>
+                        <td class="col-lg-9"><?= ${{ singularVar }}->{{ field }} ? __('Yes') : __('No'); ?></td>
+                    </tr>
+{% endfor %}
+{% endif %}
+                </tbody>
+            </table>
+{% if groupedFields.text %}
+{% for field in groupedFields.text %}
+            <div class="text">
+                <strong><?= __('{{ field|humanize }}') ?></strong>
+                <blockquote>
+                    <?= $this->Text->autoParagraph(h(${{ singularVar }}->{{ field }})); ?>
+                </blockquote>
+            </div>
+{% endfor %}
+{% endif %}
+{% set relations = associations.BelongsToMany|merge(associations.HasMany) %}
+        </div>
+    </section>
+</div>
+
+<div class="col-lg-12">
+    <section class="panel panel-collapsed">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <a href="#" id="view-audit-log" class="panel-action panel-action-toggle" data-panel-toggle="" data-target-url="<?= Cake\Routing\Router::url(["controller"=>"AuditLogs","action"=>"get-timeline-data", ${{ singularVar }}->id, '{{ pluralVar }}']); ?>"></a>
+            </div>
+
+            <h2 class="panel-title">Histórico de Alterações</h2>
+        </header>
+        <div id="audit-timeline" class="panel-body loading-overlay-showing" style="display: none; min-height: 150px;" data-loading-overlay="" data-loading-overlay-options="{ &quot;startShowing&quot;: true }">
+        </div>
+    </section>
+</div>

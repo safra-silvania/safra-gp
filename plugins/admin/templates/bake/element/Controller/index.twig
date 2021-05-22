@@ -1,0 +1,20 @@
+    /**
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function index()
+    {
+        if (!$this->userAuthenticated->can('access', $this->{{ currentModelName }}->newEmptyEntity())) {
+            $this->Flash->error('Permissão negada!');
+            return $this->redirect(['controller' => 'dashboard', 'action' => 'index']);
+        }
+
+{% set belongsTo = Bake.aliasExtractor(modelObj, 'BelongsTo') %}
+{% if belongsTo %}
+        $this->paginate = [
+            'contain' => [{{ Bake.stringifyList(belongsTo, {'indent': false})|raw }}],
+        ];
+{% endif %}
+        ${{ pluralName }} = $this->paginate($this->{{ currentModelName }});
+
+        $this->set(compact('{{ pluralName }}'));
+    }

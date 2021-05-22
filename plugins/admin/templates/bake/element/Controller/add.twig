@@ -1,0 +1,45 @@
+{% set compact = ["'#{singularName}'"] %}
+    /**
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+     */
+    public function add()
+    {
+        ${{ singularName }} = $this->{{ currentModelName }}->newEmptyEntity();
+
+        if (!$this->userAuthenticated->can('create', ${{ singularName }})) {
+            $this->Flash->error('Permissão negada!');
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        if ($this->request->is('post')) {
+            ${{ singularName }} = $this->{{ currentModelName }}->patchEntity(${{ singularName }}, $this->request->getData());
+            
+            if ($this->{{ currentModelName }}->save(${{ singularName }})) {
+                $this->Flash->success('Inclusão realizada com sucesso');
+
+                return $this->redirect(['action' => 'index']);
+            }
+
+            if (count(${{ singularName }}->getErrors()) > 0) {
+                foreach (${{ singularName }}->getErrors() as $error) {
+                    foreach ($error as $message) {
+                        $this->Flash->error($message);
+                    }
+                }
+            } else {
+                $this->Flash->error('Erro na inclusão de ' . __('{{ singularHumanName }}') . '. Por favor, tente novamente');
+            }
+        }
+
+{% set associations = Bake.aliasExtractor(modelObj, 'BelongsTo') %}
+{% set associations = associations|merge(Bake.aliasExtractor(modelObj, 'BelongsToMany')) %}
+
+{%- for assoc in associations %}
+    {%- set otherName = Bake.getAssociatedTableAlias(modelObj, assoc) %}
+    {%- set otherPlural = otherName|variable %}
+        ${{ otherPlural }} = $this->{{ currentModelName }}->{{ otherName }}->find('list', ['limit' => 200]);
+        {{- "\n" }}
+    {%- set compact = compact|merge(["'#{otherPlural}'"]) %}
+{% endfor %}
+        $this->set(compact({{ compact|join(', ')|raw }}));
+    }

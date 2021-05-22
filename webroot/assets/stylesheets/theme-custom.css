@@ -1,0 +1,67 @@
+/* Add here all your CSS customizations */
+
+.div-ambiente-teste {
+    text-align: center;
+    z-index: 99999 !important;
+    overflow: hidden;
+    bottom: 0;
+    position: fixed;
+    width: 100%;
+    background-color: red;
+    color: black;
+    font-weight: bold;
+    z-index: 1002;
+    border-bottom: 1px solid black;
+}
+
+.required-label {
+    font-weight: bold !important;
+}
+
+.not-ordenable-column {
+    color: #0099e6;
+}
+
+.note-text {
+    width: 50px;
+    border: 1px #eee solid;
+    vertical-align: middle !important;
+}
+
+.note-class {
+    vertical-align: middle !important;
+}
+
+.text-middle {
+    vertical-align: middle !important;
+}
+
+.noUi-horizontal .noUi-handle-lower .noUi-tooltip,
+.noUi-horizontal .noUi-handle-upper .noUi-tooltip {
+    bottom:-34px;
+}
+
+/*
+.modal-backdrop {
+    opacity: 0.9 !important;
+}
+
+.modal {
+    text-align: center;
+    padding: 0 !important;
+}
+
+.modal:before {
+    content: "";
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px; //Adjusts for spacing
+}
+
+.modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+}
+*/
